@@ -45,7 +45,7 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin
 
 	public function __construct(CyclicPluginInterface $plugin, CyclicPluginManagementInterface $management = NULL, int $frequency = 0, string $identifier = NULL)
 	{
-		parent::__construct($management, $frequency, $identifier);
+		parent::__construct($frequency, $management, $identifier);
 		$this->plugin = $plugin;
 	}
 
