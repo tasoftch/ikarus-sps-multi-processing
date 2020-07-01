@@ -43,6 +43,7 @@ use Ikarus\SPS\Plugin\TearDownPluginInterface;
 abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements SetupPluginInterface, TearDownPluginInterface
 {
 	private $processID = 0;
+	private $childProcess = false;
 
 	/**
 	 * @inheritDoc
@@ -72,7 +73,7 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 	 * @return bool
 	 */
 	protected function isChildProcess(): bool {
-		return $this->processID > 0;
+		return $this->childProcess;
 	}
 
 	/**
@@ -94,6 +95,8 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 			case 0:
 				// Is child process
 				usleep( $rand );
+				$this->childProcess = true;
+				$this->processID = posix_getpid();
 				$this->spawn();
 				exit();
 			default:
@@ -106,7 +109,7 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 	 */
 	public function tearDown()
 	{
-		if($this->processID) {
+		if($this->processID && !$this->isChildProcess()) {
 			// Parent process must kill running child plugin
 			posix_kill( $this->processID, SIGTERM );
 		}
