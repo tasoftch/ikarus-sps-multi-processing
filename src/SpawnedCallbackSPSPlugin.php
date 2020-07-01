@@ -34,6 +34,7 @@
 
 namespace Ikarus\SPS;
 
+use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
 use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
 
 /**
@@ -42,10 +43,12 @@ use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
  *
  * @package TASoft
  */
-class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin
+class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin implements EngineDependentPluginInterface
 {
 	/** @var callable */
 	private $callback;
+	/** @var CyclicEngineInterface */
+	private $engine;
 
 	/**
 	 * SpawnedCallbackSPSPlugin constructor.
@@ -57,6 +60,12 @@ class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin
 		parent::__construct($identifier);
 		$this->callback = $callback;
 	}
+
+	public function setEngine(?EngineInterface $engine)
+	{
+		$this->engine = $engine;
+	}
+
 
 	/**
 	 * @return callable
@@ -71,7 +80,8 @@ class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin
 	 */
 	protected function spawn()
 	{
-		call_user_func($this->getCallback(), $this);
+		$management = $this->engine->getPluginManager();
+		call_user_func($this->getCallback(), $management);
 	}
 
 	/**

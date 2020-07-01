@@ -50,7 +50,7 @@ abstract class AbstractSpawnedEngineSimulationPlugin extends AbstractSpawnedPlug
 	/** @var CyclicPluginManagementInterface */
 	private $management;
 
-	public function __construct(CyclicPluginManagementInterface $management = NULL, int $frequency = 0, string $identifier = NULL)
+	public function __construct(int $frequency = 0, CyclicPluginManagementInterface $management = NULL, string $identifier = NULL)
 	{
 		parent::__construct($identifier);
 		$this->management = $management;
@@ -70,14 +70,14 @@ abstract class AbstractSpawnedEngineSimulationPlugin extends AbstractSpawnedPlug
 	/**
 	 * @return CyclicPluginManagementInterface
 	 */
-	public function getManagement(): CyclicPluginManagementInterface
+	public function getManagement(): ?CyclicPluginManagementInterface
 	{
 		return $this->management;
 	}
 
 	protected function spawn()
 	{
-		$management = $this->getManagement();
+		$management = $this->getManagement() ?: $this->getEngine()->getPluginManager();
 
 		$freq = 1 / ($this->getFrequency() ?: $this->getEngine()->getFrequency());
 

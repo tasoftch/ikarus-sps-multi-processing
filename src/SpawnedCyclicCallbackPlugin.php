@@ -34,41 +34,18 @@
 
 namespace Ikarus\SPS;
 
-use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
+
 use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
 
-class SpawnedFileSPSPlugin extends AbstractSpawnedPlugin implements EngineDependentPluginInterface
+class SpawnedCyclicCallbackPlugin extends AbstractSpawnedEngineSimulationPlugin
 {
-	private $filename;
-	/** @var CyclicEngineInterface */
-	private $engine;
+	/** @var callable */
+	private $callback;
 
-	public function __construct(string $spsFilename, string $identifier = NULL)
+	public function __construct(callable $callback, int $frequency = 0, CyclicPluginManagementInterface $management = NULL, string $identifier = NULL)
 	{
-		parent::__construct($identifier);
-		$this->filename = $spsFilename;
-	}
-
-	public function setEngine(?EngineInterface $engine)
-	{
-		$this->engine = $engine;
-	}
-
-
-	/**
-	 * @return string
-	 */
-	public function getFilename(): string
-	{
-		return $this->filename;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	protected function spawn()
-	{
-		contextless_require( $this->getFilename(), $this->engine->getPluginManager() );
+		parent::__construct($frequency, $management, $identifier);
+		$this->callback = $callback;
 	}
 
 	/**
@@ -76,10 +53,16 @@ class SpawnedFileSPSPlugin extends AbstractSpawnedPlugin implements EngineDepend
 	 */
 	public function update(CyclicPluginManagementInterface $pluginManagement)
 	{
-		// Do not perform anything in the main sps.
+		if($this->isChildProcess()) {
+			call_user_func($this->getCallback(), $pluginManagement);
+		}
 	}
-}
 
-function contextless_require($FILE, CyclicPluginManagementInterface $PLUGIN_MANAGER) {
-	require $FILE;
+	/**
+	 * @return callable
+	 */
+	public function getCallback(): callable
+	{
+		return $this->callback;
+	}
 }
