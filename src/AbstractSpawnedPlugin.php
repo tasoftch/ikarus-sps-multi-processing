@@ -88,6 +88,8 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 	{
 		static $rand = 0;
 		$rand+=10000;
+        if($this instanceof SpawnInfoInterface)
+            $this->processWillSpawn();
 
 		switch ( $this->processID = pcntl_fork() ) {
 			case -1:
@@ -97,10 +99,13 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 				usleep( $rand );
 				$this->childProcess = true;
 				$this->processID = posix_getpid();
+                if($this instanceof SpawnInfoInterface)
+                    $this->childProcessDidSpawn();
 				$this->spawn();
 				exit();
 			default:
-				// Parent process
+                if($this instanceof SpawnInfoInterface)
+                    $this->mainProcessDidSpawn();
 		}
 	}
 
