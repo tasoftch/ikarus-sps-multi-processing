@@ -42,7 +42,7 @@ use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
 use Ikarus\SPS\Plugin\SetupPluginInterface;
 use Ikarus\SPS\Plugin\TearDownPluginInterface;
 
-class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin implements SetupPluginInterface, TearDownPluginInterface, UpdateOncePluginInterface
+class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin implements SetupPluginInterface, TearDownPluginInterface, UpdateOncePluginInterface, SpawnInfoInterface
 {
 	/** @var CyclicPluginInterface */
 	private $plugin;
@@ -111,4 +111,22 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 		if($this->plugin instanceof UpdateOncePluginInterface)
 			$this->plugin->updateOnce($pluginManagement);
 	}
+
+    public function processWillSpawn()
+    {
+        if($this->plugin instanceof SpawnInfoInterface)
+            $this->plugin->processWillSpawn();
+    }
+
+    public function mainProcessDidSpawn()
+    {
+        if($this->plugin instanceof SpawnInfoInterface)
+            $this->plugin->mainProcessDidSpawn();
+    }
+
+    public function childProcessDidSpawn()
+    {
+        if($this->plugin instanceof SpawnInfoInterface)
+            $this->plugin->childProcessDidSpawn();
+    }
 }
