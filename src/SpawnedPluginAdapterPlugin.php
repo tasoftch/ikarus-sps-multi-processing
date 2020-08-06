@@ -36,9 +36,13 @@ namespace Ikarus\SPS;
 
 
 use Ikarus\SPS\Plugin\Cyclic\CyclicPluginInterface;
+use Ikarus\SPS\Plugin\Cyclic\UpdateOncePluginInterface;
+use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
 use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Plugin\SetupPluginInterface;
+use Ikarus\SPS\Plugin\TearDownPluginInterface;
 
-class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin
+class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin implements SetupPluginInterface, TearDownPluginInterface, UpdateOncePluginInterface
 {
 	/** @var CyclicPluginInterface */
 	private $plugin;
@@ -73,7 +77,38 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin
 	public function update(CyclicPluginManagementInterface $pluginManagement)
 	{
 		if($this->isChildProcess()) {
+			$pluginManagement->beginCycle();
 			$this->getPlugin()->update($pluginManagement);
+			$pluginManagement->leaveCycle();
 		}
+	}
+
+	public function setEngine(?EngineInterface $engine): void
+	{
+		parent::setEngine($engine);
+		if($this->plugin instanceof EngineDependentPluginInterface)
+			$this->plugin->setEngine($engine);
+	}
+
+	public function setup()
+	{
+		if($this->plugin instanceof SetupPluginInterface)
+			$this->plugin->setup();
+		
+		parent::setup();
+	}
+
+	public function tearDown()
+	{
+		if($this->plugin instanceof TearDownPluginInterface)
+			$this->plugin->tearDown();
+
+		parent::tearDown();
+	}
+
+	public function updateOnce(CyclicPluginManagementInterface $pluginManagement)
+	{
+		if($this->plugin instanceof UpdateOncePluginInterface)
+			$this->plugin->updateOnce($pluginManagement);
 	}
 }
