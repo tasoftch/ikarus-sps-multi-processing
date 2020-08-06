@@ -83,6 +83,9 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 		}
 	}
 
+    /**
+     * @inheritDoc
+     */
 	public function setEngine(?EngineInterface $engine): void
 	{
 		parent::setEngine($engine);
@@ -90,6 +93,9 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 			$this->plugin->setEngine($engine);
 	}
 
+    /**
+     * @inheritDoc
+     */
 	public function setup()
 	{
 		if($this->plugin instanceof SetupPluginInterface)
@@ -98,6 +104,9 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 		parent::setup();
 	}
 
+    /**
+     * @inheritDoc
+     */
 	public function tearDown()
 	{
 		if($this->plugin instanceof TearDownPluginInterface)
@@ -106,24 +115,36 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 		parent::tearDown();
 	}
 
+    /**
+     * @inheritDoc
+     */
 	public function updateOnce(CyclicPluginManagementInterface $pluginManagement)
 	{
 		if($this->plugin instanceof UpdateOncePluginInterface)
 			$this->plugin->updateOnce($pluginManagement);
 	}
 
+    /**
+     * @inheritDoc
+     */
     public function processWillSpawn()
     {
         if($this->plugin instanceof SpawnInfoInterface)
             $this->plugin->processWillSpawn();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function mainProcessDidSpawn()
     {
         if($this->plugin instanceof SpawnInfoInterface)
             $this->plugin->mainProcessDidSpawn();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function childProcessDidSpawn()
     {
         if($this->plugin instanceof SpawnInfoInterface)
