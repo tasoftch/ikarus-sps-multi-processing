@@ -14,7 +14,7 @@
   },
   "require" : {
     "php": "^7.2",
-    "ikarus/sps": "^1.0",
+    "ikarus/sps": "^0.8",
 
     "ext-pcntl": "*",
     "ext-posix": "*"

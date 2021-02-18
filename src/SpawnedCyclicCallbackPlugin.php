@@ -34,27 +34,26 @@
 
 namespace Ikarus\SPS;
 
-
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Register\MemoryRegisterInterface;
 
 class SpawnedCyclicCallbackPlugin extends AbstractSpawnedEngineSimulationPlugin
 {
 	/** @var callable */
 	private $callback;
 
-	public function __construct(callable $callback, int $frequency = 0, CyclicPluginManagementInterface $management = NULL, string $identifier = NULL)
+	public function __construct(callable $callback, int $frequency = 0, MemoryRegisterInterface $memoryRegister = NULL, string $identifier = NULL, string $domain = NULL)
 	{
-		parent::__construct($frequency, $management, $identifier);
+		parent::__construct($frequency, $memoryRegister, $identifier, $domain);
 		$this->callback = $callback;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function update(CyclicPluginManagementInterface $pluginManagement)
+	public function update(MemoryRegisterInterface $memoryRegister)
 	{
 		if($this->isChildProcess()) {
-			call_user_func($this->getCallback(), $pluginManagement);
+			call_user_func($this->getCallback(), $memoryRegister);
 		}
 	}
 

@@ -34,26 +34,25 @@
 
 namespace Ikarus\SPS;
 
-
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Register\MemoryRegisterInterface;
 
 class SpawnedCyclicFilePlugin extends AbstractSpawnedEngineSimulationPlugin
 {
 	private $filename;
 
-	public function __construct(string $filename, int $frequency = 0, CyclicPluginManagementInterface $management = NULL, string $identifier = NULL)
+	public function __construct(string $filename, int $frequency = 0, MemoryRegisterInterface $memoryRegister = NULL, string $identifier = NULL, string $domain = NULL)
 	{
-		parent::__construct($frequency, $management, $identifier);
+		parent::__construct($frequency, $memoryRegister, $identifier, $domain);
 		$this->filename = $filename;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function update(CyclicPluginManagementInterface $pluginManagement)
+	public function update(MemoryRegisterInterface $memoryRegister)
 	{
 		if($this->isChildProcess()) {
-			contextless_require($this->getFilename(), $pluginManagement);
+			contextless_require($this->getFilename(), $memoryRegister);
 		}
 	}
 

@@ -34,81 +34,89 @@
 
 namespace Ikarus\SPS;
 
-use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Register\MemoryRegisterInterface;
 
 /**
  * The engine simulation plugin spawns the sps process and invoke its own update method in a separate process.
  *
  * @package Ikarus\SPS
  */
-abstract class AbstractSpawnedEngineSimulationPlugin extends AbstractSpawnedPlugin implements EngineDependentPluginInterface
+abstract class AbstractSpawnedEngineSimulationPlugin extends AbstractSpawnedPlugin implements EngineDependencyInterface
 {
-	/** @var CyclicEngineInterface */
+	/** @var EngineInterface */
 	private $engine;
-	private $frequency;
-	/** @var CyclicPluginManagementInterface */
-	private $management;
+	private $interval;
+	/** @var MemoryRegisterInterface */
+	private $memoryRegister;
 
-	public function __construct(int $frequency = 0, CyclicPluginManagementInterface $management = NULL, string $identifier = NULL)
+	/**
+	 * AbstractSpawnedEngineSimulationPlugin constructor.
+	 * @param int $interval in milliseconds
+	 * @param MemoryRegisterInterface|null $register
+	 * @param string|null $identifier
+	 * @param string|null $domain
+	 */
+	public function __construct(int $interval = 0, MemoryRegisterInterface $register = NULL, string $identifier = NULL, string $domain = NULL)
 	{
-		parent::__construct($identifier);
-		$this->management = $management;
-		$this->frequency = $frequency;
+		parent::__construct($identifier, $domain);
+		$this->memoryRegister = $register;
+		$this->interval = $interval;
 	}
 
 	/**
-	 * @param CyclicPluginManagementInterface $management
+	 * @param MemoryRegisterInterface $memoryRegister
 	 * @return static
 	 */
-	public function setManagement(CyclicPluginManagementInterface $management)
+	public function setMemoryRegister(MemoryRegisterInterface $memoryRegister)
 	{
-		$this->management = $management;
+		$this->memoryRegister = $memoryRegister;
 		return $this;
 	}
 
 	/**
-	 * @return CyclicPluginManagementInterface
+	 * @return MemoryRegisterInterface
 	 */
-	public function getManagement(): ?CyclicPluginManagementInterface
+	public function getMemoryRegister(): ?MemoryRegisterInterface
 	{
-		return $this->management;
+		return $this->memoryRegister;
 	}
 
 	protected function spawn()
 	{
-		$management = $this->getManagement() ?: $this->getEngine()->getPluginManager();
-
-		$freq = 1 / ($this->getFrequency() ?: $this->getEngine()->getFrequency());
-
+		$management = $this->getMemoryRegister() ?: $this->getEngine()->getMemoryRegister();
+		/** @var CyclicEngine $engine */
+		$engine = $this->getEngine();
+		$intv = ($this->getInterval() ?: $engine->getInterval());
 		while (1) {
 			$this->update($management);
-			usleep( $freq * 1e6 );
+			usleep( $intv * 1e3 );
 		}
 	}
 
 
 	/**
-	 * @return CyclicEngineInterface
+	 * @return EngineInterface
 	 */
-	public function getEngine(): CyclicEngineInterface
+	public function getEngine(): EngineInterface
 	{
 		return $this->engine;
 	}
 
 	/**
-	 * @param CyclicEngineInterface $engine
+	 * @param EngineInterface|null $engine
+	 * @return static
 	 */
-	public function setEngine(?EngineInterface $engine): void
+	public function setEngine(?EngineInterface $engine)
 	{
 		$this->engine = $engine;
+		return $this;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getFrequency(): int
+	public function getInterval(): int
 	{
-		return $this->frequency;
+		return $this->interval;
 	}
 }

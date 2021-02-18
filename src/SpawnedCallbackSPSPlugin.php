@@ -34,8 +34,7 @@
 
 namespace Ikarus\SPS;
 
-use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Register\MemoryRegisterInterface;
 
 /**
  * Please be careful with this kind of spawning the SPS!
@@ -43,11 +42,11 @@ use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
  *
  * @package TASoft
  */
-class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin implements EngineDependentPluginInterface
+class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin implements EngineDependencyInterface
 {
 	/** @var callable */
 	private $callback;
-	/** @var CyclicEngineInterface */
+	/** @var EngineInterface */
 	private $engine;
 
 	/**
@@ -55,9 +54,9 @@ class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin implements EngineDe
 	 * @param callable $callback
 	 * @param string|null $identifier
 	 */
-	public function __construct(callable $callback, string $identifier = NULL)
+	public function __construct(callable $callback, string $identifier = NULL, string $domain = NULL)
 	{
-		parent::__construct($identifier);
+		parent::__construct($identifier, $domain);
 		$this->callback = $callback;
 	}
 
@@ -80,14 +79,14 @@ class SpawnedCallbackSPSPlugin extends AbstractSpawnedPlugin implements EngineDe
 	 */
 	protected function spawn()
 	{
-		$management = $this->engine->getPluginManager();
-		call_user_func($this->getCallback(), $management);
+		$register = $this->engine->getMemoryRegister();
+		call_user_func($this->getCallback(), $register);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function update(CyclicPluginManagementInterface $pluginManagement)
+	public function update(MemoryRegisterInterface $memoryRegister)
 	{
 		// Do not perform anything in the main sps.
 	}

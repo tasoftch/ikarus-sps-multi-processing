@@ -36,24 +36,25 @@ namespace Ikarus\SPS;
 
 
 use Ikarus\SPS\Exception\SPSException;
-use Ikarus\SPS\Plugin\Cyclic\AbstractCyclicPlugin;
+use Ikarus\SPS\Plugin\AbstractPlugin;
 use Ikarus\SPS\Plugin\SetupPluginInterface;
 use Ikarus\SPS\Plugin\TearDownPluginInterface;
 
-abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements SetupPluginInterface, TearDownPluginInterface
+abstract class AbstractSpawnedPlugin extends AbstractPlugin implements SetupPluginInterface, TearDownPluginInterface
 {
 	private $processID = 0;
 	private $childProcess = false;
+	protected $delayThreadStart = true;
 
 	/**
 	 * @inheritDoc
 	 * Check that the pcntl extension is installed.
 	 */
-	public function __construct(string $identifier = NULL)
+	public function __construct(string $identifier = NULL, string $domain = NULL)
 	{
 		if(!function_exists('pcntl_fork'))
 			throw new SPSException("Spawn SPS plugins are only available if the php extension PCNTL is installed");
-		parent::__construct($identifier);
+		parent::__construct($identifier, $domain);
 	}
 
 	/**
@@ -62,7 +63,7 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 	 *
 	 * @return int
 	 */
-	public function getProcessID()
+	public function getProcessID(): int
 	{
 		return $this->processID;
 	}
@@ -96,7 +97,8 @@ abstract class AbstractSpawnedPlugin extends AbstractCyclicPlugin implements Set
 				throw new SPSException("Can not fork the current process");
 			case 0:
 				// Is child process
-				usleep( $rand );
+				if($this->delayThreadStart)
+					usleep( $rand );
 				$this->childProcess = true;
 				$this->processID = posix_getpid();
                 if($this instanceof SpawnInfoInterface)

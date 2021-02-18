@@ -34,39 +34,36 @@
 
 namespace Ikarus\SPS;
 
-
-use Ikarus\SPS\Plugin\Cyclic\CyclicPluginInterface;
-use Ikarus\SPS\Plugin\Cyclic\UpdateOncePluginInterface;
-use Ikarus\SPS\Plugin\EngineDependentPluginInterface;
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
+use Ikarus\SPS\Plugin\PluginInterface;
 use Ikarus\SPS\Plugin\SetupPluginInterface;
 use Ikarus\SPS\Plugin\TearDownPluginInterface;
+use Ikarus\SPS\Register\MemoryRegisterInterface;
 
-class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin implements SetupPluginInterface, TearDownPluginInterface, UpdateOncePluginInterface, SpawnInfoInterface
+class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin implements SetupPluginInterface, TearDownPluginInterface, SpawnInfoInterface
 {
-	/** @var CyclicPluginInterface */
+	/** @var PluginInterface */
 	private $plugin;
 
-	public function __construct(CyclicPluginInterface $plugin, CyclicPluginManagementInterface $management = NULL, int $frequency = 0, string $identifier = NULL)
+	public function __construct(PluginInterface $plugin, MemoryRegisterInterface $memoryRegister = NULL, int $frequency = 0, string $identifier = NULL, string $domain = NULL)
 	{
-		parent::__construct($frequency, $management, $identifier);
+		parent::__construct($frequency, $memoryRegister, $identifier, $domain);
 		$this->plugin = $plugin;
 	}
 
 	/**
-	 * @param CyclicPluginInterface $plugin
+	 * @param PluginInterface $plugin
 	 * @return static
 	 */
-	public function setPlugin(CyclicPluginInterface $plugin)
+	public function setPlugin(PluginInterface $plugin)
 	{
 		$this->plugin = $plugin;
 		return $this;
 	}
 
 	/**
-	 * @return CyclicPluginInterface
+	 * @return PluginInterface
 	 */
-	public function getPlugin(): CyclicPluginInterface
+	public function getPlugin(): PluginInterface
 	{
 		return $this->plugin;
 	}
@@ -74,12 +71,12 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 	/**
 	 * @inheritDoc
 	 */
-	public function update(CyclicPluginManagementInterface $pluginManagement)
+	public function update(MemoryRegisterInterface $pluginManagement)
 	{
 		if($this->isChildProcess()) {
 			$pluginManagement->beginCycle();
 			$this->getPlugin()->update($pluginManagement);
-			$pluginManagement->leaveCycle();
+			$pluginManagement->endCycle();
 		}
 	}
 
@@ -89,7 +86,7 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
 	public function setEngine(?EngineInterface $engine): void
 	{
 		parent::setEngine($engine);
-		if($this->plugin instanceof EngineDependentPluginInterface)
+		if($this->plugin instanceof EngineDependencyInterface)
 			$this->plugin->setEngine($engine);
 	}
 
@@ -118,10 +115,9 @@ class SpawnedPluginAdapterPlugin extends AbstractSpawnedEngineSimulationPlugin i
     /**
      * @inheritDoc
      */
-	public function updateOnce(CyclicPluginManagementInterface $pluginManagement)
+	public function initialize(MemoryRegisterInterface $memoryRegister)
 	{
-		if($this->plugin instanceof UpdateOncePluginInterface)
-			$this->plugin->updateOnce($pluginManagement);
+		$this->plugin->initialize($memoryRegister);
 	}
 
     /**
