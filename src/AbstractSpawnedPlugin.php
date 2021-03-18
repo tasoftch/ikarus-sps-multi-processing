@@ -97,7 +97,7 @@ abstract class AbstractSpawnedPlugin extends AbstractPlugin implements SetupPlug
 				throw new SPSException("Can not fork the current process");
 			case 0:
 				// Is child process
-				define("IKARUS_MAIN_PROCESS", false);
+				$GLOBALS['IKARUS_MAIN_PROCESS'] = false;
 				if($this->delayThreadStart)
 					usleep( $rand );
 				$this->childProcess = true;
@@ -107,7 +107,7 @@ abstract class AbstractSpawnedPlugin extends AbstractPlugin implements SetupPlug
 				$this->spawn();
 				exit();
 			default:
-				define("IKARUS_MAIN_PROCESS", true);
+				$GLOBALS['IKARUS_MAIN_PROCESS'] = true;
                 if($this instanceof SpawnInfoInterface)
                     $this->mainProcessDidSpawn();
 		}
